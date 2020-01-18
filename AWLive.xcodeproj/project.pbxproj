@@ -625,7 +625,8 @@
 				TargetAttributes = {
 					A4269D561DCE2A1B0010A4EB = {
 						CreatedOnToolsVersion = 8.1;
-						ProvisioningStyle = Automatic;
+						DevelopmentTeam = R9TTUZA6N2;
+						ProvisioningStyle = Manual;
 					};
 				};
 			};
@@ -634,6 +635,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -775,7 +777,9 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer: wei liu (4599FFQGB3)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: wei liu (4599FFQGB3)";
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -823,7 +827,9 @@
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer: wei liu (4599FFQGB3)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: wei liu (4599FFQGB3)";
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -848,8 +854,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer: wei liu (4599FFQGB3)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: wei liu (4599FFQGB3)";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = R9TTUZA6N2;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/clibs/3th-party/libyuv/include";
 				INFOPLIST_FILE = AWLive/Info.plist;
@@ -862,8 +870,9 @@
 					"$(PROJECT_DIR)/clibs/3th-party/libx264/lib",
 					"$(PROJECT_DIR)/clibs/3th-party/libyuv/lib",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.AWLive;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tencent.tv.qie.AWLive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = QIENEWNEW;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -872,8 +881,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer: wei liu (4599FFQGB3)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: wei liu (4599FFQGB3)";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = R9TTUZA6N2;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/clibs/3th-party/libyuv/include";
 				INFOPLIST_FILE = AWLive/Info.plist;
@@ -886,8 +897,9 @@
 					"$(PROJECT_DIR)/clibs/3th-party/libx264/lib",
 					"$(PROJECT_DIR)/clibs/3th-party/libyuv/lib",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.AWLive;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tencent.tv.qie.AWLive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = QIENEWNEW;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

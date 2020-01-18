@@ -54,7 +54,10 @@ extern void free_aw_flv_audio_tag(aw_flv_audio_tag ** audio_tag){
 
 extern aw_flv_video_tag *alloc_aw_flv_video_tag(){
     aw_flv_video_tag *video_tag = aw_alloc(sizeof(aw_flv_video_tag));
-    memset(video_tag, 0, sizeof(aw_flv_video_tag));
+    
+    // - 下边的代码可以不用, 因为 aw_alloc 已经实现了memset
+//    memset(video_tag, 0, sizeof(aw_flv_video_tag));
+    
     //初始化
     video_tag->common_tag.video_tag = video_tag;
     video_tag->common_tag.tag_type = aw_flv_tag_type_video;

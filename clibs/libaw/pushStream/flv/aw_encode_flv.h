@@ -83,8 +83,8 @@ typedef struct aw_flv_common_tag{
     // tag header size = 11
     // [script/audio/video]_tag_header_size 会变化
     // tag body size = sample_size + [script/audio/video]_tag_header_size
-    uint32_t data_size;//tag 总长度，包含11字节的 common_tag_header_size，包含自己的tag_header_size + tag_body_size;
-    uint32_t header_size;//自己的tag header的长度
+    uint32_t data_size;//tag 总长度，包含11字节的 common_tag_header_size，包含自己的tag_header_size + tag_body_size; 3字节
+    uint32_t header_size;//自己的tag header的长度 
     uint32_t timestamp;//时间戳，3字节
     uint8_t timestamp_extend;//时间戳扩展位，1字节
     uint32_t stream_id;//总是0，3字节

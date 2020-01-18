@@ -13,7 +13,7 @@
  */
 
 //请修改此地址
-static NSString *sRtmpUrl = @"rtmp://192.168.1.135:1935/live/test";
+static NSString *sRtmpUrl = @"rtmp://172.17.5.81:1935/QGTest";
 
 @interface TestVideoCapture ()<AWAVCaptureDelegate>
 
@@ -105,6 +105,9 @@ static NSString *sRtmpUrl = @"rtmp://192.168.1.135:1935/live/test";
     [self.switchBtn setTintColor:[UIColor whiteColor]];
     [self.switchBtn addTarget:self action:@selector(onSwitchClick) forControlEvents:UIControlEventTouchUpInside];
     [self.viewController.view addSubview:self.switchBtn];
+    
+    [self.avCapture switchCamera];
+
 }
 
 -(UIImage *)imageWithPath:(NSString *)path scale:(CGFloat)scale{

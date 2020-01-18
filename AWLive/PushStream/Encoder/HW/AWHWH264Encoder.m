@@ -71,8 +71,15 @@
     //硬编码主要其实就这一句。将携带NV12数据的PixelBuf送到硬编码器中，进行编码。
     status = VTCompressionSessionEncodeFrame(_vEnSession, pixelBuf, pts, kCMTimeInvalid, NULL, pixelBuf, NULL);
     
+    //        1/3 判断 vtCompressionSessionCallback 和 VTCompressionSessionEncodeFrame 代码的先后顺序
+//        NSLog(@"encoder VTCompressionSessionEncodeFrameStatsusChange ...");
+    
     if (status == noErr) {
         dispatch_semaphore_wait(self.vSemaphore, DISPATCH_TIME_FOREVER);
+        
+//        3/3 判断 vtCompressionSessionCallback 和 VTCompressionSessionEncodeFrame 代码的先后顺序(结论 先执行 VTCompressionSessionEncodeFrame的下一行代码 因为因为信号量的关系, 然后执行vtCompressionSessionCallback, 最后执行 dispatch_semaphore_wait 之后的代码)
+//        NSLog(@"encoder statusChange ...");
+        
         if (_naluData) {
             //此处 硬编码成功，_naluData内的数据即为h264视频帧。
             //我们是推流，所以获取帧长度，转成大端字节序，放到数据的最前面
@@ -116,14 +123,23 @@
     free_aw_data(&sps_pps_data);
     return sps_pps_tag;
 }
-
+/**
+ 赋值 encoder.spsPpsData   encoder.naluData  encoder.isKeyFrame
+ */
 static void vtCompressionSessionCallback (void * CM_NULLABLE outputCallbackRefCon,
                                           void * CM_NULLABLE sourceFrameRefCon,
                                           OSStatus status,
                                           VTEncodeInfoFlags infoFlags,
                                           CM_NULLABLE CMSampleBufferRef sampleBuffer ){
     //通过outputCallbackRefCon获取AWHWH264Encoder的对象指针，将编码好的h264数据传出去。
+    
+//    2/3 判断 vtCompressionSessionCallback 和 VTCompressionSessionEncodeFrame 代码的先后顺序
+//    NSLog(@"encoder finish...");
+    
     AWHWH264Encoder *encoder = (__bridge AWHWH264Encoder *)(outputCallbackRefCon);
+    
+//    1/1 这里验证每次进入到这个函数中的 encoder 都是同一个对象; (结论每次进入这个函数的都是同一个对象, 所以在上次一的encoder.nalu 没有处理完, 是不可以在此编码新的帧的)
+//    NSLog(@"encoder ... %@", encoder);
     
     //判断是否编码成功
     if (status != noErr) {
@@ -154,6 +170,11 @@ static void vtCompressionSessionCallback (void * CM_NULLABLE outputCallbackRefCo
             //如果推流，将此数据放入flv数据区即可。
             CMFormatDescriptionRef sampleBufFormat = CMSampleBufferGetFormatDescription(sampleBuffer);
             NSDictionary *dict = (__bridge NSDictionary *)CMFormatDescriptionGetExtensions(sampleBufFormat);
+            
+            // - 打印描述的字典
+//            NSLog(@"sampleBufFormat description : %@", dict);
+
+            // - spsPpsData : 01 4D 00 1F FF E1 00 0A 27 4D 00 1F AB 40 44 0F 3D E8 01 00 04 28 EE 3C 30
             encoder.spsPpsData = dict[@"SampleDescriptionExtensionAtoms"][@"avcC"];
         }
         needSpsPps = YES;
@@ -164,7 +185,22 @@ static void vtCompressionSessionCallback (void * CM_NULLABLE outputCallbackRefCo
     size_t blockDataLen;
     uint8_t *blockData;
     status = CMBlockBufferGetDataPointer(blockBuffer, 0, NULL, &blockDataLen, (char **)&blockData);
+    // - vtCompressionSessionCallback 函数中
+    // - blockData : 00 00 07 25 21 EB 2C 7F 7B DF...
+    // - blockDataLen : 29 07 00 00
+    // - NALULen : CFSwapInt32BigToHost 之前 : 00 00 07 25 CFSwapInt32BigToHost 之后 : 25 07 00 00
+    // - encoder.naluData : 21 EB 2C 7F 7B DF...
+    
+    // - encodeYUVDataToFlvTag 函数中
+    // - _naluData : 21 EB 2C 7F 7B DF...
+    // - naluLen : 25 07 00 00
+    // - mutableData 拼接之前 : 00 00 07 25  拼接之后 : 00 00 07 25 21 EB 2C 7F 7B DF...
+    
     if (status == noErr) {
+        
+//        1/3 确定每次encoder 完成后产生多少 NALU
+//        NSLog(@"NALU begin...==============");
+        
         size_t currReadPos = 0;
         //一般情况下都是只有1帧，在最开始编码的时候有2帧，取最后一帧
         while (currReadPos < blockDataLen - 4) {
@@ -181,7 +217,15 @@ static void vtCompressionSessionCallback (void * CM_NULLABLE outputCallbackRefCo
             currReadPos += 4 + naluLen;
             
             encoder.isKeyFrame = isKeyFrame;
+            
+//            2/3 确定每次encoder 完成后产生多少 NALU
+//            NSLog(@"NALU ing....****************");
+            
         }
+        
+//        3/3 确定每次encoder 完成后产生多少 NALU(结论 除了第1 帧会产生两个 NALU外, 每次编码一个帧, 都只是产生一个 NALU)
+//        NSLog(@"NALU end...================");
+        
     }else{
         [encoder onErrorWithCode:AWEncoderErrorCodeEncodeGetH264DataFailed des:@"got h264 data failed"];
     }

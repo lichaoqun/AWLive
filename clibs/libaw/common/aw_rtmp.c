@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include "aw_utils.h"
 
+// - RTMP_Write 的开源实现
+int RTMP_Write1(RTMP *r, const char *buf, int size);
+
 extern const char *aw_rtmp_state_description(aw_rtmp_state rtmp_state){
     switch (rtmp_state) {
         case aw_rtmp_state_idle: {
@@ -216,6 +219,17 @@ int aw_rtmp_write(aw_rtmp_context *ctx, const char *buf, int size){
         return 0;
     }
     signal(SIGPIPE, SIG_IGN);
+    
+    /* 测试代码 测试发送自定义的数据 RTMP_Write1 为 RTMP_Write 的函数实现, 写在这里是为了看下实现源码
+     char bytes[] = {0x09, 0x00, 0x00, 0x1E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                       0x00, 0x17, 0x00, 0x00, 0x00, 0x00, 0x01, 0x4D, 0x00, 0x1F,
+                       0xFF, 0xE1, 0x00, 0x0A, 0x27, 0x4D, 0x00, 0x1F, 0xAB, 0x40,
+                       0x44, 0x0F, 0x3D, 0xE8, 0x01, 0x00, 0x04, 0x28, 0xEE, 0x3C,
+                       0x30, 0x00, 0x00, 0x00, 0x29};
+     int write_ret = RTMP_Write1(ctx->rtmp, bytes, sizeof(bytes) / sizeof(char));
+     
+     */
+    
     int write_ret = RTMP_Write(ctx->rtmp, buf, size);
     if (write_ret <= 0) {
         aw_set_rtmp_state(ctx, aw_rtmp_state_error_write);
@@ -225,4 +239,91 @@ int aw_rtmp_write(aw_rtmp_context *ctx, const char *buf, int size){
 
 uint32_t aw_rtmp_time(){
     return RTMP_GetTime();
+}
+
+// - RTMP_Write的实现
+static const AVal av_setDataFrame = AVC("@setDataFrame");
+int RTMP_Write1(RTMP *r, const char *buf, int size)
+{
+  RTMPPacket *pkt = &r->m_write;
+  char *pend, *enc;
+  int s2 = size, ret, num;
+
+  pkt->m_nChannel = 0x04;    /* source channel */
+  pkt->m_nInfoField2 = r->m_stream_id;
+
+  while (s2)
+    {
+      if (!pkt->m_nBytesRead)
+    {
+      if (size < 11) {
+        /* FLV pkt too small */
+        return 0;
+      }
+
+      if (buf[0] == 'F' && buf[1] == 'L' && buf[2] == 'V')
+        {
+          buf += 13;
+          s2 -= 13;
+        }
+
+      pkt->m_packetType = *buf++;
+      pkt->m_nBodySize = AMF_DecodeInt24(buf);
+      buf += 3;
+      pkt->m_nTimeStamp = AMF_DecodeInt24(buf);
+      buf += 3;
+      pkt->m_nTimeStamp |= *buf++ << 24;
+      buf += 3;
+      s2 -= 11;
+
+      if (((pkt->m_packetType == RTMP_PACKET_TYPE_AUDIO
+                || pkt->m_packetType == RTMP_PACKET_TYPE_VIDEO) &&
+            !pkt->m_nTimeStamp) || pkt->m_packetType == RTMP_PACKET_TYPE_INFO)
+        {
+          pkt->m_headerType = RTMP_PACKET_SIZE_LARGE;
+          if (pkt->m_packetType == RTMP_PACKET_TYPE_INFO)
+        pkt->m_nBodySize += 16;
+        }
+      else
+        {
+          pkt->m_headerType = RTMP_PACKET_SIZE_MEDIUM;
+        }
+
+      if (!RTMPPacket_Alloc(pkt, pkt->m_nBodySize))
+        {
+          return FALSE;
+        }
+      enc = pkt->m_body;
+      pend = enc + pkt->m_nBodySize;
+      if (pkt->m_packetType == RTMP_PACKET_TYPE_INFO)
+        {
+          enc = AMF_EncodeString(enc, pend, &av_setDataFrame);
+          pkt->m_nBytesRead = enc - pkt->m_body;
+        }
+    }
+      else
+    {
+      enc = pkt->m_body + pkt->m_nBytesRead;
+    }
+      num = pkt->m_nBodySize - pkt->m_nBytesRead;
+      if (num > s2)
+    num = s2;
+      memcpy(enc, buf, num);
+      pkt->m_nBytesRead += num;
+      s2 -= num;
+      buf += num;
+      if (pkt->m_nBytesRead == pkt->m_nBodySize)
+    {
+      ret = RTMP_SendPacket(r, pkt, FALSE);
+      RTMPPacket_Free(pkt);
+      pkt->m_nBytesRead = 0;
+      if (!ret)
+        return -1;
+      buf += 4;
+      s2 -= 4;
+      if (s2 < 0)
+        break;
+    }
+    }
+  return size+s2;
 }
