@@ -90,6 +90,8 @@ extern void aw_streamer_send_audio_data(aw_flv_audio_tag *audio_tag){
 
 static void aw_streamer_send_flv_tag_to_rtmp(aw_flv_common_tag *common_tag){
     if (common_tag) {
+        // - aw_write_flv_tag 调用后的 s_output_buf : 09 00 00 1E 00 00 00 00 00 00 00 17 00 00 00 00 01 4D 00 1F FF E1 00 0A 27 4D 00 1F AB 40 44 0F 3D E8 01 00 04 28 EE 3C 30 00 00 00 29
+        // - 封装 videotag
         aw_write_flv_tag(&s_output_buf, common_tag);
         switch (common_tag->tag_type) {
             case aw_flv_tag_type_audio: {
@@ -115,7 +117,7 @@ static void aw_streamer_send_flv_tag_to_rtmp(aw_flv_common_tag *common_tag){
         return;
     }
     
-    //    int nRet =
+    //s_output_buf->size = 0x2D 表示 s_output_buf->data 的总长度(包括s_output_buf最后的最后4字节(0x29+4=0x2D))
     aw_rtmp_write(s_rtmp_ctx, (const char *)s_output_buf->data, s_output_buf->size);
     
     //    aw_log("[d] send flv tag size=%d sended_size=%d", s_output_buf->size, nRet);

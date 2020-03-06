@@ -225,8 +225,13 @@ static void aw_write_tag_data_size(aw_data **flv_data, aw_flv_common_tag *common
 }
 
 extern void aw_write_flv_tag(aw_data **flv_data, aw_flv_common_tag *common_tag){
+    // - 创建tag(严格遵守字节数 type(1) + size(3) + timestamp(3) + timestamp_extend(1) + streamid(3) + data(x) + tagsize(4)) tagsize = 1 + 3 + 3 + 1 + 3 + x;
     aw_write_tag_header(flv_data, common_tag);
     aw_write_tag_body(flv_data, common_tag);
+    // - 下边代码写入 00 00 00 29 表示的是 header + body 的长度是0x29, 而整个flv_data的长度是0x2D
+    /* 写入后 flv_data : 09 00 00 1E 00 00 00 00 00 00 00 17 00 00 00 00 01 4D 00 1F FF E1 00 0A 27 4D 00 1F AB 40 44 0F 3D E8 01 00 04 28 EE 3C 30 00 00 00 29
+
+     */
     aw_write_tag_data_size(flv_data, common_tag);
 }
 
