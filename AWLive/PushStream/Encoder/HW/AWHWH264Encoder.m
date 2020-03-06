@@ -227,7 +227,7 @@ static void vtCompressionSessionCallback (void * CM_NULLABLE outputCallbackRefCo
 //        NSLog(@"NALU begin...==============");
         
         size_t currReadPos = 0;
-        
+        //一般情况下都是只有1个 nalu，在最开始编码的时候有2个，取最后1个
         // - 循环获取每个 nalu 每个 nalu 前边都有 4 字节的 nalu 流长度
         while (currReadPos < blockDataLen - 4) {
             uint32_t naluLen = 0;
