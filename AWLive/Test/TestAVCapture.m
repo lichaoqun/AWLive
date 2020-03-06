@@ -13,7 +13,7 @@
  */
 
 //请修改此地址
-static NSString *sRtmpUrl = @"rtmp://172.17.5.81:1935/QGTest";
+static NSString *sRtmpUrl = @"rtmp://192.168.1.7:1935/QGTest";
 
 @interface TestVideoCapture ()<AWAVCaptureDelegate>
 
@@ -41,7 +41,7 @@ static NSString *sRtmpUrl = @"rtmp://172.17.5.81:1935/QGTest";
         _captureManager = [[AWAVCaptureManager alloc] init];
         
         //下面的3个类型必须设置，否则获取不到AVCapture
-        _captureManager.captureType = AWAVCaptureTypeGPUImage;
+        _captureManager.captureType = AWAVCaptureTypeSystem;
         _captureManager.audioEncoderType = AWAudioEncoderTypeHWAACLC;
         _captureManager.videoEncoderType = AWVideoEncoderTypeHWH264;
         _captureManager.audioConfig = [[AWAudioConfig alloc] init];

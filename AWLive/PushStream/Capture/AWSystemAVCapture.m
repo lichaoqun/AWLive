@@ -53,7 +53,7 @@
     [self updateFps: self.videoConfig.fps];
 }
 
-//初始化视频设备
+//初始化输入视频设备
 -(void) createCaptureDevice{
     //创建视频设备
     NSArray *videoDevices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
@@ -96,6 +96,7 @@
     [self.preview.layer addSublayer:self.previewLayer];
 }
 
+/** 设置配置 */
 -(void) setVideoOutConfig{
     for (AVCaptureConnection *conn in self.videoDataOutput.connections) {
         if (conn.isVideoStabilizationSupported) {
@@ -155,13 +156,18 @@
     self.captureSession = nil;
 }
 
+/** 初始化输出的设备 */
 -(void) createOutput{
     
     dispatch_queue_t captureQueue = dispatch_queue_create("aw.capture.queue", DISPATCH_QUEUE_SERIAL);
     
     self.videoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
     [self.videoDataOutput setSampleBufferDelegate:self queue:captureQueue];
+    
+    // - 丢弃最后一帧
     [self.videoDataOutput setAlwaysDiscardsLateVideoFrames:YES];
+    
+    // - 设置图像的格式
     [self.videoDataOutput setVideoSettings:@{
                                              (__bridge NSString *)kCVPixelBufferPixelFormatTypeKey:@(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)
                                              }];
