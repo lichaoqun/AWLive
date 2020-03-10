@@ -90,15 +90,22 @@
 //        NSLog(@"encoder statusChange ...");
         
         if (_naluData) {
+            /* AVCC 格式*/
             //此处 硬编码成功，_naluData内的数据即为h264编码后的流数据.
             //我们是推流，所以获取帧长度，转成大端字节序，放到数据的最前面
             uint32_t naluLen = (uint32_t)_naluData.length;
             //小端转大端。计算机内一般都是小端，而网络和文件中一般都是大端。大端转小端和小端转大端算法一样，就是字节序反转就行了。
             uint8_t naluLenArr[4] = {naluLen >> 24 & 0xff, naluLen >> 16 & 0xff, naluLen >> 8 & 0xff, naluLen & 0xff};
-            //将数据拼在一起
             NSMutableData *mutableData = [NSMutableData dataWithBytes:naluLenArr length:4];
             [mutableData appendData:_naluData];
             
+            /* ** ---- Annex B 格式 ---- **
+             uint8_t startCode[] = {0x00, 0x00, 0x00, 0x01};
+             NSMutableData *mutableData = [NSMutableData dataWithBytes:startCode length:4];
+             [mutableData appendData:_naluData];
+
+             */
+
             //将h264数据合成flv tag，合成flvtag之后就可以直接发送到服务端了。后续会介绍
             aw_flv_video_tag *video_tag = aw_encoder_create_video_tag((int8_t *)mutableData.bytes, mutableData.length, ptsMs, 0, self.isKeyFrame);
             
@@ -184,9 +191,20 @@ static void vtCompressionSessionCallback (void * CM_NULLABLE outputCallbackRefCo
 //            NSLog(@"sampleBufFormat description : %@", dict);
 
             // - spsPpsData : 01 4D 00 1F FF E1 00 0A 27 4D 00 1F AB 40 44 0F 3D E8 01 00 04 28 EE 3C 30
+            
+            /* 两种获取 sps pps的方式对应着两种不同的H.264流媒体协议格式中的Annex B格式和AVCC格式
+             AVCC 格式: 代码中使用的格式
+             dict[@"SampleDescriptionExtensionAtoms"][@"avcC"] + NALULen0(4字节) + NALU数据(NALULen0字节) + NALULen1(4字节) + NALU数据(NALULen1字节) + .... + NALULenx(4字节) + NALU数据(NALULenx字节)
+             
+             Annex B 格式 : 代码中注释的格式
+                0x00000001(4字节) + sps + 0x00000001(4字节) + pps + 0x00000001(4字节) + NALU 数据 + 0x00000001(4字节) + NALU 数据 + ..... + 0x00000001(4字节) + NALU 数据
+             */
+
+            
+            /* ** ---- AVCC ---- ** 格式 */
             encoder.spsPpsData = dict[@"SampleDescriptionExtensionAtoms"][@"avcC"];
             
-            /*  获取 sps 和 pps的另一个方法 此方法设置的 spspps 无效, 会无法解码
+            /* ** ---- Annex B ---- ** 格式
             size_t spsSize, spsCount;
             const uint8_t *spsContent;
             OSStatus spsStatus = CMVideoFormatDescriptionGetH264ParameterSetAtIndex(sampleBufFormat, 0, &spsContent, &spsSize, &spsCount, 0);
@@ -196,10 +214,15 @@ static void vtCompressionSessionCallback (void * CM_NULLABLE outputCallbackRefCo
             OSStatus ppsStatus = CMVideoFormatDescriptionGetH264ParameterSetAtIndex(sampleBufFormat, 1, &ppsContent, &ppsSize, &ppsCount, 0);
             
             NSMutableData *spsPpsData = [NSMutableData data];
+            uint8_t startCode[] = {0x00, 0x00, 0x00, 0x01};
+            [spsPpsData appendBytes:startCode length:4];
             [spsPpsData appendBytes:spsContent length:spsSize];
+            [spsPpsData appendBytes:startCode length:4];
             [spsPpsData appendBytes:ppsContent length:ppsSize];
             encoder.spsPpsData = spsPpsData;
+             
             */
+            
         }
         needSpsPps = YES;
     }

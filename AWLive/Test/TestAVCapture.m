@@ -13,8 +13,8 @@
  */
 
 // - 搭建本地 nginx 推流服务器: https://www.jianshu.com/p/86035a4027d8
-//static NSString *sRtmpUrl = @"rtmp://172.17.5.81:1935/QGTest"; // - 公司的流地址
-static NSString *sRtmpUrl = @"rtmp://192.168.1.10:1935/rtmplive"; // - 家里的流地址
+static NSString *sRtmpUrl = @"rtmp://192.168.1.9:1935/QGTest"; // - 公司的流地址
+//static NSString *sRtmpUrl = @"rtmp://192.168.1.10:1935/rtmplive"; // - 家里的流地址
 
 @interface TestVideoCapture ()<AWAVCaptureDelegate>
 
