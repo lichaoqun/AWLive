@@ -33,5 +33,6 @@ extern void aw_streamer_send_audio_data(aw_flv_audio_tag *audio_tag);
 extern void aw_streamer_send_video_sps_pps_tag(aw_flv_video_tag *sps_pps_tag);
 //发送 audio specific config
 extern void aw_streamer_send_audio_specific_config_tag(aw_flv_audio_tag *asc_tag);
-
+// - 发送 setDataFrame
+extern void aw_streamer_send_setDataFrame_tag(aw_flv_script_tag *script_tag);
 #endif /* aw_streamer_h */

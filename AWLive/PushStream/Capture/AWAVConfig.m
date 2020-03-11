@@ -101,3 +101,18 @@
 }
 
 @end
+
+// - 根据 AWVideoConfig 和 AWAudioConfig 生成 aw_flv_script_tag
+extern aw_flv_script_tag *createScriptTagWithConfig(AWVideoConfig *videoConfig, AWAudioConfig *audioConfig){
+    aw_flv_script_tag *script_tag = alloc_aw_flv_script_tag();
+    script_tag->duration = 0;
+    script_tag->width = videoConfig.width;
+    script_tag->height = videoConfig.height;
+    script_tag->video_data_rate = videoConfig.bitrate;
+    script_tag->frame_rate = videoConfig.fps;
+    script_tag->a_sample_rate = audioConfig.sampleRate;
+    script_tag->a_sample_size = audioConfig.sampleSize;
+    script_tag->stereo = 0;
+    script_tag->file_size = 0;
+    return script_tag;
+}

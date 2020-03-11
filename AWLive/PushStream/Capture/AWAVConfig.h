@@ -40,3 +40,6 @@
 
 @property (nonatomic, readonly, unsafe_unretained) aw_x264_config x264Config;
 @end
+ 
+// - 根据 AWVideoConfig 和 AWAudioConfig 生成 aw_flv_script_tag
+extern aw_flv_script_tag *createScriptTagWithConfig(AWVideoConfig *videoConfig, AWAudioConfig *audioConfig);

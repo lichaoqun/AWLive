@@ -28,6 +28,17 @@ static void aw_streamer_rtmp_state_changed_callback(aw_rtmp_state old_state, aw_
 static int8_t aw_steamer_open_rtmp_context();
 static void aw_streamer_close_rtmp_context();
 
+//script-----
+extern void aw_streamer_send_setDataFrame_tag(aw_flv_script_tag *script_tag){
+    if (!aw_streamer_is_rtmp_valid()) {
+        aw_log("[E] aw_streamer_send_setDataFrame_tag s_rtmp_ctx is NULL");
+        free_aw_flv_script_tag(&script_tag);
+        return;
+    }
+    aw_streamer_send_flv_tag_to_rtmp(&script_tag->common_tag);
+}
+
+
 //video-----
 
 extern void aw_streamer_send_video_data(aw_flv_video_tag *video_tag){
