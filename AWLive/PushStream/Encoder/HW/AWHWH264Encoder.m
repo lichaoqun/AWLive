@@ -84,6 +84,7 @@
 //        NSLog(@"encoder VTCompressionSessionEncodeFrameStatsusChange ...");
     
     if (status == noErr) {
+        // - 这里使用 信号量是因为上边要有返回值, 但是这里的编码操作是个异步操作, 为了给异步操作返回值, 这里就使用了信号量
         dispatch_semaphore_wait(self.vSemaphore, DISPATCH_TIME_FOREVER);
         
 //        3/3 判断 vtCompressionSessionCallback 和 VTCompressionSessionEncodeFrame 代码的先后顺序(结论 先执行 VTCompressionSessionEncodeFrame的下一行代码 因为因为信号量的关系, 然后执行vtCompressionSessionCallback, 最后执行 dispatch_semaphore_wait 之后的代码)
