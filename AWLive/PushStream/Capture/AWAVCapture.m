@@ -290,12 +290,12 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
         }
         
         // - setdataframe
-        aw_flv_script_tag *setdataframeTag = createScriptTagWithConfig(self.videoConfig, self.audioConfig);
-        if (setdataframeTag) {
-            aw_streamer_send_setDataFrame_tag(setdataframeTag);
+        aw_flv_script_tag *setDataFrameTag = createScriptTagWithConfig(self.videoConfig, self.audioConfig);
+        if (setDataFrameTag) {
+            aw_streamer_send_setDataFrame_tag(setDataFrameTag);
         }
 
-        weakSelf.isSpsPpsAndAudioSpecificConfigAndSetDataFrameSent = spsPpsTag || audioSpecificConfigTag || setdataframeTag;
+        weakSelf.isSpsPpsAndAudioSpecificConfigAndSetDataFrameSent = spsPpsTag || audioSpecificConfigTag || setDataFrameTag;
         
         aw_log("[D] is sps pps and audio sepcific config sent=%d", weakSelf.isSpsPpsAndAudioSpecificConfigAndSetDataFrameSent);
     }];
