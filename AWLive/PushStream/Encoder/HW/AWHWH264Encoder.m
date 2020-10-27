@@ -195,7 +195,7 @@ static void vtCompressionSessionCallback (void * CM_NULLABLE outputCallbackRefCo
             
             /* 两种获取 sps pps的方式对应着两种不同的H.264流媒体协议格式中的Annex B格式和AVCC格式
              AVCC 格式: 代码中使用的格式
-             dict[@"SampleDescriptionExtensionAtoms"][@"avcC"] + NALULen0(4字节) + NALU数据(NALULen0字节) + NALULen1(4字节) + NALU数据(NALULen1字节) + .... + NALULenx(4字节) + NALU数据(NALULenx字节)
+             dict[@"SampleDescriptionExtensionAtoms"][@"avcC"] + NALULen0(4字节) + NALU数据(NALULen0个字节) + NALULen1(4字节) + NALU数据(NALULen1个字节) + .... + NALULenx(4字节) + NALU数据(NALULenx个字节)
              
              Annex B 格式 : 代码中注释的格式
                 0x00000001(4字节) + sps + 0x00000001(4字节) + pps + 0x00000001(4字节) + NALU 数据 + 0x00000001(4字节) + NALU 数据 + ..... + 0x00000001(4字节) + NALU 数据
@@ -229,10 +229,24 @@ static void vtCompressionSessionCallback (void * CM_NULLABLE outputCallbackRefCo
     }
     
     //获取真正的视频帧数据 是很多 NALU 的合集
+    /**
+     
+     // CVPixelBuffer 与 CVImageBuffer 类型相同
+     CVPixelBuffer 是存储在内存中的一个未压缩的光栅图像 Buffer，包括图像的宽度、高度等。
+
+     CMBlockBuffer 是一个任意的 Buffer，相当于 Buffer 中的 Any. 在管道中压缩视频的时候，会把它包装成 CMBlockBuffer。相当于 CMBlockBuffer 代表着一个压缩的数据。
+
+     CMSampleBuffer 可能是一个压缩的数据，也可能是一个未压缩的数据。取决于 CMSampleBuffer 里面是 CMBlockBuffer（压缩后） 还是 CVPixelBuffer（未压缩）
+     */
     // CMSampleBuffer在解码前存储的是 CVPixelBuffer, 解码后存储的是 CMBlockBuffer
     CMBlockBufferRef blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
+    
+    // - blockDataLen的长度, 里边有可能有多个 blockData;
     size_t blockDataLen;
+    
+    // - 每个blockData 的前四个字节表示nalu的长度, 后边表示当前的nalu数据
     uint8_t *blockData;
+    
     status = CMBlockBufferGetDataPointer(blockBuffer, 0, NULL, &blockDataLen, (char **)&blockData);
     // - vtCompressionSessionCallback 函数中
     // - blockData : 00 00 07 25 21 EB 2C 7F 7B DF...

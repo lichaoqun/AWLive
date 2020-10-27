@@ -22,7 +22,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 @property (nonatomic, strong) NSOperationQueue *sendSampleOpQueue;
 
 //是否已发送了sps/pps
-@property (nonatomic, unsafe_unretained) BOOL isSpsPpsAndAudioSpecificConfigAndSetDataFrameSent;
+@property (nonatomic, unsafe_unretained) BOOL isSpsPpsAndAudioSpecificConfigSent;
 
 //编码管理
 @property (nonatomic, strong) AWEncoderManager *encoderManager;
@@ -134,7 +134,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 
 -(void) stopCapture{
     self.isCapturing = NO;
-    self.isSpsPpsAndAudioSpecificConfigAndSetDataFrameSent = NO;
+    self.isSpsPpsAndAudioSpecificConfigSent = NO;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         //关闭编码器
         [self.encodeSampleOpQueue cancelAllOperations];
@@ -238,7 +238,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     if (video_tag) {
         [sendQueue addOperationWithBlock:^{
             if(weakSelf.isCapturing){
-                if (!weakSelf.isSpsPpsAndAudioSpecificConfigAndSetDataFrameSent) {
+                if (!weakSelf.isSpsPpsAndAudioSpecificConfigSent) {
                     [weakSelf sendSpsPpsAndAudioSpecificConfigTagToSendQueue:sendQueue];
                     free_aw_flv_video_tag((aw_flv_video_tag **)&video_tag);
                 }else{
@@ -256,7 +256,7 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
     if(audio_tag){
         [sendQueue addOperationWithBlock:^{
             if(weakSelf.isCapturing){
-                if (!weakSelf.isSpsPpsAndAudioSpecificConfigAndSetDataFrameSent) {
+                if (!weakSelf.isSpsPpsAndAudioSpecificConfigSent) {
                     [weakSelf sendSpsPpsAndAudioSpecificConfigTagToSendQueue:sendQueue];
                     free_aw_flv_audio_tag((aw_flv_audio_tag **)&audio_tag);
                 }else{
@@ -270,12 +270,12 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
 }
 
 -(void) sendSpsPpsAndAudioSpecificConfigTagToSendQueue:(NSOperationQueue *) sendQueue{
-    if (self.isSpsPpsAndAudioSpecificConfigAndSetDataFrameSent) {
+    if (self.isSpsPpsAndAudioSpecificConfigSent) {
         return;
     }
     __weak typeof(self) weakSelf = self;
     [sendQueue addOperationWithBlock:^{
-        if (!weakSelf.isCapturing || weakSelf.isSpsPpsAndAudioSpecificConfigAndSetDataFrameSent) {
+        if (!weakSelf.isCapturing || weakSelf.isSpsPpsAndAudioSpecificConfigSent) {
             return;
         }
         //video sps pps tag
@@ -289,15 +289,9 @@ extern void aw_rtmp_state_changed_cb_in_oc(aw_rtmp_state old_state, aw_rtmp_stat
             aw_streamer_send_audio_specific_config_tag(audioSpecificConfigTag);
         }
         
-        // - setdataframe
-        aw_flv_script_tag *setDataFrameTag = createScriptTagWithConfig(self.videoConfig, self.audioConfig);
-        if (setDataFrameTag) {
-            aw_streamer_send_setDataFrame_tag(setDataFrameTag);
-        }
-
-        weakSelf.isSpsPpsAndAudioSpecificConfigAndSetDataFrameSent = spsPpsTag || audioSpecificConfigTag || setDataFrameTag;
+        weakSelf.isSpsPpsAndAudioSpecificConfigSent = spsPpsTag || audioSpecificConfigTag;
         
-        aw_log("[D] is sps pps and audio sepcific config sent=%d", weakSelf.isSpsPpsAndAudioSpecificConfigAndSetDataFrameSent);
+        aw_log("[D] is sps pps and audio sepcific config sent=%d", weakSelf.isSpsPpsAndAudioSpecificConfigSent);
     }];
 }
 

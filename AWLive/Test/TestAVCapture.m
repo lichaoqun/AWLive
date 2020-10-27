@@ -13,7 +13,10 @@
  */
 
 // - 搭建本地 nginx 推流服务器: https://www.jianshu.com/p/86035a4027d8
-static NSString *sRtmpUrl = @"rtmp://192.168.1.9:1935/QGTest"; // - 公司的流地址
+//static NSString *sRtmpUrl = @"rtmp://172.17.3.170:1935/liveStream"; // - 公司的流地址
+
+static NSString *sRtmpUrl = @"rtmp://90162.livepush.myqcloud.com/live/chaoqunge"; // - 公司的流地址
+
 //static NSString *sRtmpUrl = @"rtmp://192.168.1.10:1935/rtmplive"; // - 家里的流地址
 
 @interface TestVideoCapture ()<AWAVCaptureDelegate>
@@ -42,7 +45,7 @@ static NSString *sRtmpUrl = @"rtmp://192.168.1.9:1935/QGTest"; // - 公司的流
         _captureManager = [[AWAVCaptureManager alloc] init];
         
         //下面的3个类型必须设置，否则获取不到AVCapture
-        _captureManager.captureType = AWAVCaptureTypeSystem;
+        _captureManager.captureType = AWAVCaptureTypeGPUImage;
         _captureManager.audioEncoderType = AWAudioEncoderTypeHWAACLC;
         _captureManager.videoEncoderType = AWVideoEncoderTypeHWH264;
         _captureManager.audioConfig = [[AWAudioConfig alloc] init];
